@@ -36,7 +36,7 @@ class mMessages{
 		
 	}
 }
-
+//Можно было бы использовать прокси, но конкретно здесь в этом нет смысла
 class mMessagesCheck extends mMessages{
 	protected $errors;
 	
