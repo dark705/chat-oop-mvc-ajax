@@ -16,5 +16,8 @@
 	<!-- Send -->
 	<?="\n"?>
 	<?=$templateSend?>
+	<!-- pop up info-->
+	<?="\n"?>
+	<?=$templatePopup?>
 </body>
 </html>

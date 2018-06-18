@@ -9,7 +9,8 @@ class mChat {
 	public function show(){
 		$htmlMessages = new mInclude('vMessages.php', array('messages'=> $this->json->get()));
 		$htmlSend = new mInclude('vSend.php');
-		$htmlAll = new mInclude('vMain.php', array('templateMessages' => $htmlMessages->get(), 'templateSend' => $htmlSend->get()));
+		$htmlPopup = new mInclude('vPopup.php');
+		$htmlAll = new mInclude('vMain.php', array('templateMessages' => $htmlMessages->get(), 'templateSend' => $htmlSend->get(), 'templatePopup' => $htmlPopup->get()));
 		$htmlAll->show();
 	}
 }

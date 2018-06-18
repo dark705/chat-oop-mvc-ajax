@@ -22,3 +22,37 @@
 	float: right;
 	
 }
+
+#popup{
+	display: none;
+}
+
+.popup__center
+{
+	z-index: 100;
+	top: 50%;
+	position: absolute;
+	left:0;
+	right:0;
+}
+
+.popup__center-to-left
+{
+	position: relative;
+	right: 50%;
+	float: right;
+}
+.popup__center-to-right
+{
+	position: relative;
+	right: -50%;
+}
+
+.popup__text
+{
+	border: 1px solid grey;
+	background-color: #def;
+	font-size: 16px;
+	padding:10px;
+}
+
