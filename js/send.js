@@ -25,6 +25,8 @@ function send(user, message){
 		success: function (reply) {
 			if (reply == 'success'){
 				elMessage.value = '';
+			} else {
+				console.log(reply);
 			}
 		}
 	});
