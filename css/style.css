@@ -1,0 +1,24 @@
+#messages{
+	
+}
+
+.message{
+	background-color:#f1ffff;
+	margin: .5em;
+}
+
+.message__text{
+
+}
+
+.message__user{
+	font-weight: bold;
+}
+
+.message__time{
+	text-align: right;
+	font-size: 0.8em;
+	color: #999;
+	float: right;
+	
+}
