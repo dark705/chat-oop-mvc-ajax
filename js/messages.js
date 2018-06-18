@@ -9,6 +9,7 @@ function refreshMessages(){
 		url: 'index.php',
 		data : {receive: true},
 		success: function (d) {
+			//console.log(d);
 			var obj = $.parseJSON(d); // = JSON.parse(d)
 				
 			//Узел со всеми сообщениями
