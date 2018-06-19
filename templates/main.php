@@ -9,15 +9,16 @@
 	<script src="js/jquery.min.js"></script>
 </head>
 <body>
-	<!-- Messages -->
-	<?=$templateMessages?><?="\n"?>
-	<hr>
-	<?="\n"?>
-	<!-- Send -->
-	<?="\n"?>
-	<?=$templateSend?>
-	<!-- pop up info-->
-	<?="\n"?>
-	<?=$templatePopup?>
+	<div id="wrapper">
+		<!-- Messages -->
+		<?=$templateMessages?><?="\n"?>
+		<?="\n"?>
+		<!-- Send -->
+		<?="\n"?>
+		<?=$templateSend?>
+		<!-- pop up info-->
+		<?="\n"?>
+		<?=$templatePopup?>
+	</div>
 </body>
 </html>

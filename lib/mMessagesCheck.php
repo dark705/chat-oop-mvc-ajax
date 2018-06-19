@@ -15,7 +15,7 @@ class mMessages{
 	}
 	
 	public function get(){
-		$query = "SELECT  * FROM `messages_oop` ORDER BY `date_msg` DESC LIMIT 10";
+		$query = "SELECT  * FROM `messages_oop` ORDER BY `date_msg` DESC LIMIT 50";
 		$res = $this->my->request($query);
 		while ($record = $res->fetch_assoc()){
 			$arr[] = $record;
