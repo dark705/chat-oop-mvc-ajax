@@ -1,22 +1,22 @@
 <?php
 interface iMessages{
-	public function __construct($post, $my);
+	public function __construct($post);
 	public function get();
 	public function add();
 	public function showJson();
 }
 
 class mMessages implements iMessages{
-	protected $post;
-	protected $my;
+	private $post;
 		
-	public function __construct($post, $my){
+	public function __construct($post){
 		$this->post = $post;
-		$this->my = $my;
+		$dbConfig = new mConfigIni('config/db.ini');
+		$this->my = new mMySQL($dbConfig->host, $dbConfig->db, $dbConfig->login, $dbConfig->pass);
 	}
 	
 	public function get(){
-		$query = "SELECT  * FROM `messages_oop`  ORDER BY `date_msg` DESC LIMIT 50;";;
+		$query = "SELECT  * FROM `messages_oop`  ORDER BY `date_msg` DESC LIMIT 50;";
 		$res = $this->my->request($query);
 		while ($record = $res->fetch_assoc()){
 			$arr[] = $record;
@@ -50,32 +50,32 @@ class mMessages implements iMessages{
 }
 //Прокси Защита
 class mMessagesCheck implements iMessages{
-	protected $errors;
+	private $post;
 	
-	public function __construct($post, $my){
+	public function __construct($post){
 		$this->post = $post;
-		$this->my = $my;
 	}
 	
 	public function add(){
+		$errors = false;
 		$mObj = json_decode($this->post['transmit']);
 		if(!isset($mObj->user) or $mObj->user == '')
-			$this->errors[] = 'Введите имя';
+			$errors[] = 'Введите имя';
 		if(!isset($mObj->message) or $mObj->message == '')
-			$this->errors[] = 'Нет сообщения';
+			$errors[] = 'Нет сообщения';
 		
 		//доп проверки на SQL инъекции и т.д.
 		
-		if(is_array($this->errors)){
-			echo json_encode($this->errors);
+		if(is_array($errors)){
+			echo json_encode($errors);
 		} else {
-			$real = new mMessages($this->post, $this->my);
+			$real = new mMessages($this->post);
 			$real->add();
 		}
 	}
 	
 	public function get(){
-		$real = new mMessages($this->post, $this->my);
+		$real = new mMessages($this->post);
 		return $real->get();
 	}
 	
@@ -83,7 +83,7 @@ class mMessagesCheck implements iMessages{
 		if ($this->post['receive'] != ''){
 			$mObj = json_decode($this->post['receive']);
 			if (preg_match("/^[\d\+]+$/", $mObj->last)){
-				$real = new mMessages($this->post, $this->my);
+				$real = new mMessages($this->post);
 				$real->showJson();
 			}
 		}
