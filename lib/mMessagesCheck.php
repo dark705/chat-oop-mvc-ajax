@@ -2,12 +2,13 @@
 interface iMessages{
 	public function __construct($post, $my);
 	public function get();
-	public function set();
+	public function add();
 	public function showJson();
 }
 
-class mMessages{
+class mMessages implements iMessages{
 	protected $post;
+	protected $my;
 		
 	public function __construct($post, $my){
 		$this->post = $post;
@@ -38,7 +39,7 @@ class mMessages{
 			echo 'no';
 	}
 	
-	public function set(){
+	public function add(){
 		$mObj = json_decode($this->post['transmit']);
 		$t = "INSERT INTO `messages_oop` (`date_msg`, `user`, `message`) VALUES (now(), '%s', '%s');";
 		$query = sprintf($t, $mObj->user, $mObj->message);
@@ -47,11 +48,16 @@ class mMessages{
 		
 	}
 }
-//Можно было бы использовать прокси, но конкретно здесь в этом нет смысла
-class mMessagesCheck extends mMessages{
+//Прокси Защита
+class mMessagesCheck implements iMessages{
 	protected $errors;
 	
-	public function set(){
+	public function __construct($post, $my){
+		$this->post = $post;
+		$this->my = $my;
+	}
+	
+	public function add(){
 		$mObj = json_decode($this->post['transmit']);
 		if(!isset($mObj->user) or $mObj->user == '')
 			$this->errors[] = 'Введите имя';
@@ -63,8 +69,25 @@ class mMessagesCheck extends mMessages{
 		if(is_array($this->errors)){
 			echo json_encode($this->errors);
 		} else {
-			parent::set();
+			$real = new mMessages($this->post, $this->my);
+			$real->add();
 		}
 	}
+	
+	public function get(){
+		$real = new mMessages($this->post, $this->my);
+		return $real->get();
+	}
+	
+	public function showJson(){
+		if ($this->post['receive'] != ''){
+			$mObj = json_decode($this->post['receive']);
+			if (preg_match("/^[\d\+]+$/", $mObj->last)){
+				$real = new mMessages($this->post, $this->my);
+				$real->showJson();
+			}
+		}
+	}
+	
 }
 ?>

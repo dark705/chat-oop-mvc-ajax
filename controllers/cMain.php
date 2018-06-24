@@ -19,7 +19,7 @@ class cMain{
 		else {
 			$messages = new mMessagesCheck($_POST, $mysql);
 			if (array_key_exists('transmit', $_POST))
-				$messages->set();
+				$messages->add();
 			if (array_key_exists('receive', $_POST))
 				$messages->showJson();
 		}

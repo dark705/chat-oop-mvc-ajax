@@ -26,11 +26,16 @@ function send(user, message){
 			if (reply == 'success'){
 				elMessage.value = '';
 			} else {
-				var errors = JSON.parse(reply)
-				var errorsHTML = errors.join('<br>\n')
-				$('.popup__text').html(errorsHTML);
-				$('#popup').fadeIn(100);
-				$('#popup').delay(1500).fadeOut(300);
+				try {
+					var errors = JSON.parse(reply)
+					var errorsHTML = errors.join('<br>\n')
+					$('.popup__text').html(errorsHTML);
+					$('#popup').fadeIn(100);
+					$('#popup').delay(1500).fadeOut(300);
+				} catch (e){
+					
+				}
+
 			}
 		}
 	});
