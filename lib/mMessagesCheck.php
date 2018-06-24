@@ -15,21 +15,32 @@ class mMessages{
 	}
 	
 	public function get(){
-		$query = "SELECT  * FROM `messages_oop` ORDER BY `date_msg` DESC LIMIT 50";
+		$query = "SELECT  * FROM `messages_oop`  ORDER BY `date_msg` DESC LIMIT 50;";;
 		$res = $this->my->request($query);
 		while ($record = $res->fetch_assoc()){
 			$arr[] = $record;
 		}
-		return array_reverse($arr); //JSON_FORCE_OBJECT
+		return array_reverse($arr);
 	}
 	
 	public function showJson(){
-		echo json_encode($this->get());
+		$mObj = json_decode($this->post['receive']);
+		$t = "SELECT  * FROM `messages_oop` WHERE `id_msg` > '%d' ORDER BY `date_msg` DESC LIMIT 50;";
+		$query = sprintf($t, $mObj->last);
+		$res = $this->my->request($query);
+		while ($record = $res->fetch_assoc()){
+			$arr[] = $record;
+		}
+		if (isset($arr)){
+			echo json_encode(array_reverse($arr)); //JSON_FORCE_OBJECT
+		}
+		else
+			echo 'no';
 	}
 	
 	public function set(){
 		$mObj = json_decode($this->post['transmit']);
-		$t = "INSERT INTO `messages_oop` (`date_msg`, `user`, `message`) VALUES (now(), '%s', '%s')";
+		$t = "INSERT INTO `messages_oop` (`date_msg`, `user`, `message`) VALUES (now(), '%s', '%s');";
 		$query = sprintf($t, $mObj->user, $mObj->message);
 		if ($this->my->request($query));
 			echo 'success';
