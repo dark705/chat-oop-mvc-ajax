@@ -1,5 +1,6 @@
 <?php
-class mInclude {
+namespace lib;
+class mTemplate {
 	private $html;
 
 	public function __construct($file, $var = array()){

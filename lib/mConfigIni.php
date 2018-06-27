@@ -1,4 +1,5 @@
 <?php
+namespace lib;
 //Класс модели Старт
 class mConfigIni{
 	/*	//V.02

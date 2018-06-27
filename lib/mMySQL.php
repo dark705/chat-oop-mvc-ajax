@@ -1,4 +1,6 @@
 <?php
+namespace lib;
+use mysqli;
 class mMySQL{
 	private $dbHost;
 	private $dbName;

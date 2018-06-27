@@ -1,4 +1,5 @@
 <?php
+namespace lib;
 interface iMessages{
 	public function __construct($post);
 	public function get();
