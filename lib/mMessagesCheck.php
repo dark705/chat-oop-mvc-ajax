@@ -58,18 +58,28 @@ class mMessagesCheck implements iMessages{
 	}
 	
 	public function add(){
-		$errors = false;
+		$correct = true;
 		$mObj = json_decode($this->post['transmit']);
-		if(!isset($mObj->user) or $mObj->user == '')
-			$errors[] = 'Введите имя';
-		if(!isset($mObj->message) or $mObj->message == '')
-			$errors[] = 'Нет сообщения';
+		if (!isset($mObj->user) or !isset($mObj->message))
+			return;
 		
-		//доп проверки на SQL инъекции и т.д.
+		$mObj->user = trim($mObj->user);
+		$mObj->message = trim($mObj->message);
+		$this->post['transmit'] = json_encode($mObj); //поскольку модифицировали исходный запрос, изменим его и в _POST
 		
-		if(is_array($errors)){
-			echo json_encode($errors);
-		} else {
+		// Пробелы	
+		if($mObj->user == '' || $mObj->message == '')
+			$correct = false;
+		//HTML
+		if(preg_match("/[<\/][a-zA-Z]{1,10}[>]+/", $mObj->user) or preg_match("/[<\/][a-zA-Z]{1,10}[>]+/", $mObj->message)) 
+			$correct = false;
+		//SQL
+		if(preg_match("/((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))/i", $mObj->user) or preg_match("/(\%27)|(\')|(\-\-)|(\%23)|(#)/i", $mObj->message)) 
+			$correct = false;
+		//И т.д 
+		
+		
+		if($correct){
 			$real = new mMessages($this->post);
 			$real->add();
 		}
