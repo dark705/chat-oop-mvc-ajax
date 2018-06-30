@@ -1,14 +1,13 @@
 <?php
 namespace lib;
 class mChat {
-		private $json;
-		public function __construct($json){
-		$this->json = $json;
+		private $messages;
+		public function __construct($messages){
+		$this->messages = $messages;
 	}
 	
-	
 	public function show(){
-		$htmlMessages = new mTemplate('templates/messages.php', array('messages'=> $this->json->get()));
+		$htmlMessages = new mTemplate('templates/messages.php', array('messages'=> $this->messages->get()));
 		$htmlSend = new mTemplate('templates/send.php');
 		$htmlPopup = new mTemplate('templates/popup.php');
 		$htmlAll = new mTemplate('templates/main.php', array('templateMessages' => $htmlMessages->get(), 'templateSend' => $htmlSend->get(), 'templatePopup' => $htmlPopup->get()));
