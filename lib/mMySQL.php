@@ -16,7 +16,7 @@ class mMySQL{
 	}
 	
 	public function request($query){
-		$mysqli = new mysqli($this->dbHost, $this->dbName, $this->dbLogin, $this->dbPass);
+		$mysqli = new mysqli($this->dbHost, $this->dbLogin, $this->dbPass, $this->dbName);
 		if ($mysqli->connect_errno)
 			die ("Ошибка соединения:$mysqli->connect_errno!<br> Host:$this->dbHost<br> DB:$this->dbName<br> Login: $this->dbLogin");
 		else{
