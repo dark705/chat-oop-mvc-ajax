@@ -6,7 +6,7 @@ var message = document.querySelector('.message').cloneNode(true);
 var lastMessageNum = messages.lastElementChild.getAttribute('data-msg_num') || 0;
 
 $(document).ready(function(){
-	setInterval(refreshMessages, 300);
+	setInterval(refreshMessages, 1000);
 });
 
 function refreshMessages(){
@@ -36,11 +36,13 @@ function refreshMessages(){
 						messages.appendChild(messageNew);
 						$(messageNew).slideDown(500);
 					}
-					
-					//И удаляем столько старых сколько пришло новых
-					for (var i = 0; i < arr.length; i++){
-						messages.removeChild(messages.children[0]);
+					if (messages.children.length >= 50){ //на случай если мало сообщений в БД
+						//И удаляем столько старых сколько пришло новых
+						for (var i = 0; i < arr.length; i++){
+							messages.removeChild(messages.children[0]);
+						}
 					}
+
 				} catch(e) {
 					
 				}
