@@ -4,6 +4,7 @@ interface iMessages{
 	public function __construct($post);
 	public function get();
 	public function add();
+	public function getUsernameByCookie();
 	public function showJson();
 }
 
@@ -14,6 +15,7 @@ class mMessages implements iMessages{
 		$this->post = $post;
 		$dbConfig = new mConfigIni('config/db.ini');
 		$this->my = new mMySQL($dbConfig->host, $dbConfig->db, $dbConfig->login, $dbConfig->pass);
+		$this->cookie = new mCookie(10);
 	}
 	
 	public function get(){
@@ -23,6 +25,10 @@ class mMessages implements iMessages{
 			$arr[] = $record;
 		}
 		return array_reverse($arr);
+	}
+	
+	public function getUsernameByCookie(){
+		return $this->cookie->get('username');
 	}
 	
 	public function showJson(){
@@ -42,6 +48,7 @@ class mMessages implements iMessages{
 	
 	public function add(){
 		$mObj = json_decode($this->post['transmit']);
+		$this->cookie->set('username', $mObj->user);
 		$t = "INSERT INTO `messages_oop` (`date_msg`, `user`, `message`) VALUES (now(), '%s', '%s');";
 		$query = sprintf($t, $mObj->user, $mObj->message);
 		if ($this->my->request($query));
@@ -84,6 +91,19 @@ class mMessagesCheck implements iMessages{
 			$real->add();
 		}
 	}
+	
+	public function getUsernameByCookie(){ //куки, тоже могли подделать на стороне клиента, 
+		$correct = true;
+		$real = new mMessages($this->post);
+		$userName = $real->getUsernameByCookie();
+		if(preg_match("/[<\/][a-zA-Z]{1,10}[>]+/", $userName)) //по этому проверяем как минимум на возможность внедрения HTML и PHP
+			$correct = false;
+		if ($correct){
+			return $userName;
+		}
+		return false;
+	}
+	
 	
 	public function get(){
 		$real = new mMessages($this->post);

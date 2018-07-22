@@ -7,8 +7,8 @@ class mChat {
 	}
 	
 	public function show(){
-		$htmlMessages = new mTemplate('templates/messages.php', array('messages'=> $this->messages->get()));
-		$htmlSend = new mTemplate('templates/send.php');
+		$htmlMessages = new mTemplate('templates/messages.php', array('messages' => $this->messages->get()));
+		$htmlSend = new mTemplate('templates/send.php', array('username' => $this->messages->getUsernameByCookie()));
 		$htmlPopup = new mTemplate('templates/popup.php');
 		$htmlAll = new mTemplate('templates/main.php', array('templateMessages' => $htmlMessages->get(), 'templateSend' => $htmlSend->get(), 'templatePopup' => $htmlPopup->get()));
 		$htmlAll->show();
