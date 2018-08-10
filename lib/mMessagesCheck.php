@@ -10,18 +10,21 @@ interface iMessages{
 
 class mMessages implements iMessages{
 	private $post;
-		
+	private $sql;
+	private $cookie;
+	private $dbConfig;
+	
 	public function __construct($post){
 		$this->post = $post;
-		$dbConfig = new mConfigIni('config/db.ini');
-		$this->my = new mMySQL($dbConfig->host, $dbConfig->db, $dbConfig->login, $dbConfig->pass);
+		$this->dbConfig = $dbConfig = new mConfigIni('config/db.ini');
+		$this->sql = new DbSQL($dbConfig->type,$dbConfig->host, $dbConfig->db, $dbConfig->login, $dbConfig->pass, 'utf8', true);
 		$this->cookie = new mCookie(10);
 	}
 	
 	public function get(){
-		$query = "SELECT  * FROM `messages_oop`  ORDER BY `date_msg` DESC LIMIT 50;";
-		$res = $this->my->request($query);
-		while ($record = $res->fetch_assoc()){
+		$query = "SELECT  * FROM messages_oop  ORDER BY date_msg DESC LIMIT 50;";
+		$res = $this->sql->request($query);
+		while ($record = $res->fetch(\PDO::FETCH_ASSOC)){
 			$arr[] = $record;
 		}
 		return array_reverse($arr);
@@ -33,10 +36,10 @@ class mMessages implements iMessages{
 	
 	public function showJson(){
 		$mObj = json_decode($this->post['receive']);
-		$t = "SELECT  * FROM `messages_oop` WHERE `id_msg` > '%d' ORDER BY `date_msg` DESC LIMIT 50;";
+		$t = "SELECT  * FROM messages_oop WHERE id_msg > '%d' ORDER BY date_msg DESC LIMIT 50;";
 		$query = sprintf($t, $mObj->last);
-		$res = $this->my->request($query);
-		while ($record = $res->fetch_assoc()){
+		$res = $this->sql->request($query);
+		while ($record = $res->fetch(\PDO::FETCH_ASSOC)){
 			$arr[] = $record;
 		}
 		if (isset($arr)){
@@ -49,9 +52,18 @@ class mMessages implements iMessages{
 	public function add(){
 		$mObj = json_decode($this->post['transmit']);
 		$this->cookie->set('username', $mObj->user);
-		$t = "INSERT INTO `messages_oop` (`date_msg`, `user`, `message`) VALUES (now(), '%s', '%s');";
+		
+		switch($this->dbConfig->type){
+			case 'pgsql':
+				$t = "INSERT INTO messages_oop (\"date_msg\", \"user\", \"message\") VALUES (now()::timestamptz(0), '%s', '%s');";
+				break;
+			case 'mysql':
+				$t = "INSERT INTO messages_oop (`date_msg`, `user`, `message`) VALUES (now(), '%s', '%s');";
+				break;
+		}
+		
 		$query = sprintf($t, $mObj->user, $mObj->message);
-		if ($this->my->request($query));
+		if ($this->sql->request($query));
 			echo 'success';
 		
 	}
