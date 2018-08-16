@@ -13,40 +13,69 @@ class mMessages implements iMessages{
 	private $sql;
 	private $cookie;
 	private $dbConfig;
+	private $redis;
 	
 	public function __construct($post){
 		$this->post = $post;
 		$this->dbConfig = $dbConfig = new mConfigIni('config/db.ini');
+		$this->redisConfig = $redisConfig = new mConfigIni('config/redis.ini');
 		$this->sql = new DbSQL($dbConfig->type,$dbConfig->host, $dbConfig->db, $dbConfig->login, $dbConfig->pass, 'utf8', true);
 		$this->cookie = new mCookie(10);
+		if($redisConfig->status == 'on'){
+			$this->redis = new mRedis($redisConfig->ip, $redisConfig->port, $redisConfig->password, $redisConfig->database, $redisConfig->keystorage, 50);
+		}
 	}
 	
 	public function get(){
-		$query = "SELECT  * FROM messages_oop  ORDER BY date_msg DESC LIMIT 50;";
-		$res = $this->sql->request($query);
-		while ($record = $res->fetch(\PDO::FETCH_ASSOC)){
-			$arr[] = $record;
+		//если Redis используется, И в нём уже есть сообщения
+		if($this->redisConfig->status == 'on' and $this->redis->check()){
+			$arr = $this->redis->get();
+		} else {
+		//если Redis не используется, ИЛИ сообщений в нём ещё нет(холодный старт)
+			$query = "SELECT  * FROM messages_oop  ORDER BY date_msg DESC LIMIT 50;";
+			$res = $this->sql->request($query);
+			while ($record = $res->fetch(\PDO::FETCH_ASSOC)){
+				$arr[] = $record;
+				if($this->redisConfig->status == 'on'){ //Redis используется, был холодный старт, переносим из SQL БД в Redis
+					$this->redis->add($record);
+				}
+			}
 		}
 		return array_reverse($arr);
 	}
-	
-	public function getUsernameByCookie(){
-		return $this->cookie->get('username');
-	}
-	
+		
+
 	public function showJson(){
 		$mObj = json_decode($this->post['receive']);
-		$t = "SELECT  * FROM messages_oop WHERE id_msg > '%d' ORDER BY date_msg DESC LIMIT 50;";
-		$query = sprintf($t, $mObj->last);
-		$res = $this->sql->request($query);
-		while ($record = $res->fetch(\PDO::FETCH_ASSOC)){
-			$arr[] = $record;
+		$last_id = $mObj->last;
+		
+		//Если Redis используется и был холодный старт 
+		if($this->redisConfig->status == 'on' and !$this->redis->check()){
+			$this->get(); //перенесёт сообщения из SQL БД в Redis
 		}
-		if (isset($arr)){
-			echo json_encode(array_reverse($arr)); //JSON_FORCE_OBJECT
+		
+		//Если Redis используется (на возможность холодного старта, проверили ранее)
+		if($this->redisConfig->status == 'on'){
+			$red_arr = $this->redis->get();
+			foreach($red_arr as $record){
+				if ($record['id_msg'] > $last_id){
+					$arr[] = $record;
+				}
+			}
+		} else { //Redis не используется
+			$t = "SELECT  * FROM messages_oop WHERE id_msg > '%d' ORDER BY date_msg DESC LIMIT 50;";
+			$query = sprintf($t, $last_id);
+			$res = $this->sql->request($query);
+			while ($record = $res->fetch(\PDO::FETCH_ASSOC)){
+				$arr[] = $record;
+			}
 		}
-		else
-			echo 'no';
+		
+		if (isset($arr)){ //если нашли новые(либо в SQL либо Redis),
+				echo json_encode(array_reverse($arr)); //выводим
+			} else {
+				echo 'no'; //если нет, то говорим что нет новых
+			}
 	}
 	
 	public function add(){
@@ -63,11 +92,24 @@ class mMessages implements iMessages{
 		}
 		
 		$query = sprintf($t, $mObj->user, $mObj->message);
-		if ($this->sql->request($query));
+		if ($this->sql->request($query)){
+			if($this->redisConfig->status == 'on'){ //Если Redis включён
+				//полностью обновляем его из основной бд, иначе id записей в redis и SQL могут разойтись, да и не такие большие накладные расходы
+				$query = "SELECT  * FROM messages_oop  ORDER BY date_msg DESC LIMIT 50;";
+				$res = $this->sql->request($query);
+				while ($record = $res->fetch(\PDO::FETCH_ASSOC)){
+					$this->redis->add($record);
+				}
+			}
 			echo 'success';
-		
+		}
+	}
+	
+	public function getUsernameByCookie(){
+		return $this->cookie->get('username');
 	}
 }
+
 //Прокси Защита
 class mMessagesCheck implements iMessages{
 	private $post;
